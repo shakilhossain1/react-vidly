@@ -6,12 +6,14 @@ import Pagintaion from './common/pagination';
 import ListGroup from './common/listGroup';
 import MoviesTable from './moviesTable';
 import _ from 'lodash';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
+import SearchBox from './searchBox';
 
 class Movies extends Component {
   state = {
     movies: [],
     genres: [],
+    searchQuery: '',
     pageSize: 4,
     currentPage: 1,
     selectedGenere: null,
@@ -42,11 +44,15 @@ class Movies extends Component {
   };
 
   handelGenreSelect = genre => {
-    this.setState({selectedGenere: genre, currentPage: 1});
+    this.setState({selectedGenere: genre, currentPage: 1, searchQuery: ''});
   };
 
   handleSort = sortColumn => {
     this.setState({sortColumn});
+  };
+
+  handleSearch = query => {
+    this.setState({searchQuery: query, selectedGenere: null, currentPage: 1});
   };
 
   getPageData = () => {
@@ -56,11 +62,16 @@ class Movies extends Component {
       sortColumn,
       currentPage,
       pageSize,
+      searchQuery,
     } = this.state;
-    const filtered =
-      selectedGenere && selectedGenere._id
-        ? allMovies.filter(m => m.genre._id === selectedGenere._id)
-        : allMovies;
+    let filtered = allMovies;
+    if (searchQuery) {
+      filtered = allMovies.filter(m =>
+        m.title.toLowerCase().startsWith(searchQuery.toLocaleLowerCase())
+      );
+    } else if (selectedGenere && selectedGenere._id) {
+      filtered = allMovies.filter(m => m.genre._id === selectedGenere._id)
+    }
     const sorted = _.orderBy(filtered, [sortColumn.path], sortColumn.order);
     const movies = pagintate(sorted, currentPage, pageSize);
 
@@ -91,8 +102,14 @@ class Movies extends Component {
           />
         </div>
         <div className='col'>
-          <Link to="/movies/new" className="btn btn-primary my-2">New Movie</Link>
+          <Link to='/movies/new' className='btn btn-primary my-2'>
+            New Movie
+          </Link>
           <p>Showing {moviesCount} movies in database</p>
+          <SearchBox
+            searchQuery={this.state.searchQuery}
+            onChange={this.handleSearch}
+          />
           <MoviesTable
             movies={movies}
             onDelete={this.handleDelete}
