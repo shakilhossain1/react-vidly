@@ -44,7 +44,8 @@ class Movies extends Component {
     try {
       await deleteMovie(movie._id);
     } catch (ex) {
-      if (ex.response && ex.response.status === 404) toast.error('This movie already deleted');
+      if (ex.response && ex.response.status === 404)
+        toast.error('This movie already deleted');
       this.setState({movies: originalMovies});
     }
   };
@@ -66,10 +67,19 @@ class Movies extends Component {
   };
 
   getPageData = () => {
-    const {selectedGenere, movies: allMovies, sortColumn, currentPage, pageSize, searchQuery} = this.state;
+    const {
+      selectedGenere,
+      movies: allMovies,
+      sortColumn,
+      currentPage,
+      pageSize,
+      searchQuery,
+    } = this.state;
     let filtered = allMovies;
     if (searchQuery) {
-      filtered = allMovies.filter(m => m.title.toLowerCase().startsWith(searchQuery.toLocaleLowerCase()));
+      filtered = allMovies.filter(m =>
+        m.title.toLowerCase().startsWith(searchQuery.toLocaleLowerCase())
+      );
     } else if (selectedGenere && selectedGenere._id) {
       filtered = allMovies.filter(m => m.genre._id === selectedGenere._id);
     }
@@ -80,23 +90,40 @@ class Movies extends Component {
   };
 
   render() {
-    const {movies: allMovies, currentPage, selectedGenere, pageSize, sortColumn} = this.state;
+    const {
+      movies: allMovies,
+      currentPage,
+      selectedGenere,
+      pageSize,
+      sortColumn,
+    } = this.state;
+    const {user} = this.props;
 
-    if (allMovies.length === 0) return <p>There are no movie in the database</p>;
+    if (allMovies.length === 0)
+      return <p>There are no movie in the database</p>;
 
     const {data: movies, moviesCount} = this.getPageData();
 
     return (
       <div className='row'>
         <div className='col-2'>
-          <ListGroup items={this.state.genres} selectedItem={selectedGenere} onItemSelect={this.handelGenreSelect} />
+          <ListGroup
+            items={this.state.genres}
+            selectedItem={selectedGenere}
+            onItemSelect={this.handelGenreSelect}
+          />
         </div>
         <div className='col'>
-          <Link to='/movies/new' className='btn btn-primary my-2'>
-            New Movie
-          </Link>
+          {user && (
+            <Link to='/movies/new' className='btn btn-primary my-2'>
+              New Movie
+            </Link>
+          )}
           <p>Showing {moviesCount} movies in database</p>
-          <SearchBox searchQuery={this.state.searchQuery} onChange={this.handleSearch} />
+          <SearchBox
+            searchQuery={this.state.searchQuery}
+            onChange={this.handleSearch}
+          />
           <MoviesTable
             movies={movies}
             onDelete={this.handleDelete}
@@ -104,7 +131,12 @@ class Movies extends Component {
             onLike={this.handleLike}
             sortColumn={sortColumn}
           />
-          <Pagintaion itemsCount={moviesCount} pageSize={pageSize} currentPage={currentPage} onPageChange={this.handlePageChange} />
+          <Pagintaion
+            itemsCount={moviesCount}
+            pageSize={pageSize}
+            currentPage={currentPage}
+            onPageChange={this.handlePageChange}
+          />
         </div>
       </div>
     );

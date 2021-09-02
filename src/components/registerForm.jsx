@@ -1,8 +1,11 @@
 import React from 'react';
 import Joi from 'joi-browser';
 import Form from './common/form';
+import { register } from '../services/userService'
+import auth from '../services/authService';
+import { Redirect } from 'react-router-dom';
 
-class LoginForm extends Form {
+class RegisterForm extends Form {
   state = {
     data: {
       username: '',
@@ -18,12 +21,23 @@ class LoginForm extends Form {
     name: Joi.string().required().max(30).label('Name'),
   };
 
-  doSubmit = () => {
-    alert('submited register form')
+  doSubmit = async () => {
+    try {
+      const res = await register(this.state.data);
+      auth.loginWithJWT(res.headers['x-auth-token']);
+      window.location = '/';
+    }
+    catch(ex) {
+      if (ex.response && ex.response.status === 400) {
+        const errors = {...this.state.errors};
+        errors.username = ex.response.data;
+        this.setState({errors});
+      }
+    }
   };
 
   render() {
-    const {data, errors} = this.state;
+    if (auth.currentUser()) return <Redirect to='/' />;
     return (
       <div>
         <h1>Register</h1>
@@ -38,4 +52,4 @@ class LoginForm extends Form {
   }
 }
 
-export default LoginForm;
+export default RegisterForm;
